@@ -9,8 +9,11 @@ from django.contrib.auth.hashers import make_password
 class CustomAccountManager(BaseUserManager):
 
     def create_superuser(self, firstname, lastname, password, **other_fields):
+        other_fields.setdefault('is_staff', True)
         other_fields.setdefault('is_superuser', True)
 
+        if other_fields.get('is_staff') is not True:
+            raise ValueError('Superuser must be assigned to is_staff=True.')
         if other_fields.get('is_superuser') is not True:
             raise ValueError(
                 'Superuser must be assigned to is_superuser=True.')
@@ -27,7 +30,8 @@ class CustomAccountManager(BaseUserManager):
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     firstname = models.CharField(max_length=30)
     lastname = models.CharField(max_length=30)
-    username = models.CharField(max_length=30, unique=True)
+    username = models.CharField(max_length=25, unique=True)
+    is_staff = models.BooleanField(default=False, blank=True)
 
     objects = CustomAccountManager()
 
