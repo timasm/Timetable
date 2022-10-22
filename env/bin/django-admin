@@ -1,4 +1,4 @@
-#!/Users/timassmann/Desktop/Timetable/env/bin/python
+#!/Users/florianschroter/Desktop/Timetable/env/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys
