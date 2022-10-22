@@ -34,6 +34,7 @@ WORKING_TIMES_AFTERNOON = ["m12_14","m14_16",
                            "t12_14","t14_16",
                            "f12_14","f14_16"]
 
+
 class Timetable(cs.Problem):
     """
     Class used to create timetables.
@@ -49,21 +50,22 @@ class Timetable(cs.Problem):
         self.ids = {}
         self.combined_hours = []
         self.timetable = None
+        self.working_times = WORKING_TIMES
+        self.working_times_morning = WORKING_TIMES_MORNING
+        self.working_times_afternoon = WORKING_TIMES_AFTERNOON
         
-    def add_worker(self, name, working_hours=None, preferences=None):
+    def add_worker(self, name, working_hours=None, preferences=None, id=None):
         """
         add worker as variable
         Example:
         >>> p = Timetable()
-        >>> p.add_worker("Andrew", 8, WORKING_TIMES)
+        >>> p.add_worker("Andrew", 8, self.working_times)
         """
         if name in self.worker.keys():
             return ArgumentError("name is already in database")
 
-        id = len(self.worker.keys())
-
         if len(self._variables.keys()) == 0:
-               self.addVariables(WORKING_TIMES, [name])
+               self.addVariables(self.working_times, [name])
                self.worker[name] = (working_hours, preferences, id)
                self.ids[id] = name
                return
@@ -78,7 +80,7 @@ class Timetable(cs.Problem):
         set a new amount of working hours for name
         Example:
         >>> p = Timetable()
-        >>> p.add_worker("Andrew", preferences=WORKING_TIMES)
+        >>> p.add_worker("Andrew", preferences=self.working_times)
         >>> p.set_working_hours("Andrew", 5)
         """
         self.worker[name][0] = working_hours
@@ -104,10 +106,10 @@ class Timetable(cs.Problem):
         """
 
         if special_hours is not None:
-            self.addConstraint(lambda *working_times: sum(list(map(lambda x: x==name, working_times))) <= special_hours, WORKING_TIMES)
+            self.addConstraint(lambda *working_times: sum(list(map(lambda x: x==name, working_times))) <= special_hours, self.working_times)
             return
         elif self.worker[name][0] is not None:
-            self.addConstraint(lambda *working_times: sum(list(map(lambda x: x==name, working_times))) <= self.worker[name][0], WORKING_TIMES)
+            self.addConstraint(lambda *working_times: sum(list(map(lambda x: x==name, working_times))) <= self.worker[name][0], self.working_times)
         else: 
             raise ArgumentError("no working hours specified")
 
@@ -142,20 +144,26 @@ class Timetable(cs.Problem):
         8-10 Andrew, 10-12 Andrew, 12-14 Max, 14-16 Max is preferred over
         8-10 Andrew, 10-12 Max, 12-14 Andrew, 14-15 Max
         """
-        for i in range(len(WORKING_TIMES) - 1):
-            if WORKING_TIMES[i][0] != WORKING_TIMES[i+1][0]:
+        for i in range(len(self.working_times) - 1):
+            if self.working_times[i][0] != self.working_times[i+1][0]:
                 continue
-            self.addConstraint(lambda x1, x2: x1 == x2, [WORKING_TIMES[i], WORKING_TIMES[i+1]])
+            self.addConstraint(lambda x1, x2: x1 == x2, [self.working_times[i], self.working_times[i+1]])
             self.combined_hours.append((i, i+1))
             
 
     def _relax_preferences(self):
         random_worker_name = choice(list(filter(lambda x: type(x) != int, self.worker.keys())))
-        while len(self.worker[random_worker_name]) <= len(WORKING_TIMES):
+        for worker in self.worker:
+            if worker[1] is None:
+                break
+        else:
+            return
+        while len(self.worker[random_worker_name]) <= len(self.working_times):
+            print(2)
             if self.worker[random_worker_name][1] is None:
                 random_worker_name = choice(list(filter(lambda x: type(x) != int, self.worker.keys())))
                 continue
-            random_worker_shift_index = WORKING_TIMES.index(choice(self.worker[random_worker_name][1]))
+            random_worker_shift_index = self.working_times.index(choice(self.worker[random_worker_name][1]))
             candidate = None
             for _ in range(5):
                 if (random_worker_shift_index) % 4 == 0:
@@ -172,8 +180,8 @@ class Timetable(cs.Problem):
                     break
             if candidate is None:
                 continue
-            self.set_working_preferences(random_worker_name, self.worker[random_worker_name][1] + [WORKING_TIMES[candidate]])
-            return random_worker_name, WORKING_TIMES[candidate]
+            self.set_working_preferences(random_worker_name, self.worker[random_worker_name][1] + [self.working_times[candidate]])
+            return random_worker_name, self.working_times[candidate]
 
     def _relax_combined_hours(self):
         if len(self.combined_hours) == 0: return
@@ -182,13 +190,13 @@ class Timetable(cs.Problem):
         random_hour_combo = self.combined_hours[random_hour_combo_index]
         del self.combined_hours[random_hour_combo_index]
         for ix, el in enumerate(self._constraints):
-                if el[1] == [WORKING_TIMES[random_hour_combo[0]], WORKING_TIMES[random_hour_combo[1]]]:
+                if el[1] == [self.working_times[random_hour_combo[0]], self.working_times[random_hour_combo[1]]]:
                     del self._constraints[ix]
-        return (WORKING_TIMES[random_hour_combo[0]], WORKING_TIMES[random_hour_combo[1]])
+        return (self.working_times[random_hour_combo[0]], self.working_times[random_hour_combo[1]])
 
     def generate_timetable(self, minutes):
         seconds = int(60 * minutes)
-        sol = Array('i', len(WORKING_TIMES))
+        sol = Array('i', len(self.working_times))
         process = Process(target = self._iterative_deepening, args=([sol]))
         process.start()
         time.sleep(seconds)
@@ -210,7 +218,7 @@ class Timetable(cs.Problem):
             s = self._find_solution(max_relax=relaxations)
             if s is not False:
                 if s[1] < relaxations:
-                    for ix, shift in enumerate(WORKING_TIMES):
+                    for ix, shift in enumerate(self.working_times):
                         sol[ix] = self.worker[s[0][shift]][2]
                         if ix % 4 == 0:
                             print("\n")
@@ -225,7 +233,7 @@ class Timetable(cs.Problem):
         self._constrain_combined_hours()
         for r in range(50):
             if (len(relaxations["combined_hours"]) + (len(relaxations["worker_preferences"]))) >= max_relax:
-                print("max relax")
+                print("max relax", max_relax, len(relaxations["combined_hours"]) + (len(relaxations["worker_preferences"])))
                 return False
             s = self.getSolution()
             if s is not None:
@@ -235,7 +243,7 @@ class Timetable(cs.Problem):
                 relaxed_worker = self._relax_preferences()
                 relaxations["combined_hours"] += [relaxed_hours]
                 relaxations["worker_preferences"] += [relaxed_worker]
-            #print(f"round [{r}/{iterations}]")
+            print(f"round [{r}/{iterations}]")
         return False
 
 def main():
@@ -243,14 +251,14 @@ def main():
     p = Timetable(cs.MinConflictsSolver())
     
 
-    p.add_worker("Flo", 3)
-    p.add_worker("Bene", 3)
-    p.add_worker("Lena", 3)
-    p.add_worker("Christian", 3)
-    p.add_worker("Flo1", 3)
-    p.add_worker("Bene1", 3)
-    p.add_worker("Lena1", 3)
-    p.add_worker("Christian1", 3)
+    p.add_worker("Flo", 3, id=0)
+    p.add_worker("Bene", 3, id=1)
+    p.add_worker("Lena", 3, id=2)
+    p.add_worker("Christian", 3, id=3)
+    p.add_worker("Flo1", 3, id=4)
+    p.add_worker("Bene1", 3, id=5)
+    p.add_worker("Lena1", 3, id=6)
+    p.add_worker("Christian1", 3, id=7)
 
     p.constrain_working_hours("Flo")
     p.constrain_working_hours("Bene")
@@ -261,11 +269,13 @@ def main():
     p.constrain_working_hours("Lena1")
     p.constrain_working_hours("Christian1")
 
-    p.constrain_working_preferences("Christian", WORKING_TIMES_AFTERNOON)
-    p.constrain_working_preferences("Lena", WORKING_TIMES_MORNING)
+  #  p.constrain_working_preferences("Christian", WORKING_TIMES_AFTERNOON)
+  #  p.constrain_working_preferences("Lena", WORKING_TIMES_MORNING)
+
+    print(p.worker)
 
     p.generate_timetable(1)
     print(p.timetable)
 
-if __name__ == '__main__':
-    main()
+#if __name__ == '__main__':
+ #   main()
