@@ -152,16 +152,15 @@ class Timetable(cs.Problem):
             
 
     def _relax_preferences(self):
-        random_worker_name = choice(list(filter(lambda x: type(x) != int, self.worker.keys())))
-        for worker in self.worker:
-            if worker[1] is None:
+        random_worker_name = choice(list(self.worker.keys()))
+        for w in self.worker.values():
+            if w[1] is not None:
                 break
         else:
             return
         while len(self.worker[random_worker_name]) <= len(self.working_times):
-            print(2)
             if self.worker[random_worker_name][1] is None:
-                random_worker_name = choice(list(filter(lambda x: type(x) != int, self.worker.keys())))
+                random_worker_name = choice(list(self.worker.keys()))
                 continue
             random_worker_shift_index = self.working_times.index(choice(self.worker[random_worker_name][1]))
             candidate = None
@@ -233,7 +232,6 @@ class Timetable(cs.Problem):
         self._constrain_combined_hours()
         for r in range(50):
             if (len(relaxations["combined_hours"]) + (len(relaxations["worker_preferences"]))) >= max_relax:
-                print("max relax", max_relax, len(relaxations["combined_hours"]) + (len(relaxations["worker_preferences"])))
                 return False
             s = self.getSolution()
             if s is not None:
