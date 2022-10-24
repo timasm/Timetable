@@ -60,6 +60,7 @@ class Employee(models.Model):
     lastname = models.CharField(max_length=25)
     duration = models.IntegerField(default=0)
     preferences = models.JSONField()
+    role = models.JSONField(default={})
 
     class Meta:
         unique_together = ('firstname', 'lastname')
