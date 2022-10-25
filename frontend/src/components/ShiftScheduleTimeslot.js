@@ -33,26 +33,24 @@ const ShiftScheduleTimeslot = ({ data, height, index }) => {
             >
                {data.slotTime}
             </Typography>
-            <DragDropContext>
-               {[1, 2, 3, 4, 5].map((number) => {
-                  return (
-                     <Droppable
-                        key={number}
-                        droppableId={`time-slot-${index}-${number}`}
-                     >
-                        {(provided) => (
-                           <div
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                              ref={provided.innerRef}
-                              id={`emp-${number}-${index}`}
-                              className="employee-in-timeslot"
-                           ></div>
-                        )}
-                     </Droppable>
-                  );
-               })}
-            </DragDropContext>
+            {[1, 2, 3, 4, 5].map((number) => {
+               return (
+                  <Droppable
+                     key={number}
+                     droppableId={`time-slot-${index}-${number}`}
+                  >
+                     {(provided) => (
+                        <div
+                           {...provided.draggableProps}
+                           {...provided.dragHandleProps}
+                           ref={provided.innerRef}
+                           id={`emp-${number}-${index}`}
+                           className="employee-in-timeslot"
+                        ></div>
+                     )}
+                  </Droppable>
+               );
+            })}
          </Box>
       </>
    );

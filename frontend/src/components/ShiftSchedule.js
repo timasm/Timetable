@@ -138,28 +138,28 @@ const ShiftSchedule = () => {
             >
                <ShiftScheduleTopic></ShiftScheduleTopic>
                <div className="shift-content">
-                  <div className="shift-content-timetable">
-                     {tempData.map((slot, index) => {
-                        const height = 94 / tempData.length - 0.6;
-                        const lastElement = index === tempData.length - 1;
-                        return (
-                           <div key={index} style={{ height: `${height}%` }}>
-                              <ShiftScheduleTimeslot
-                                 data={slot}
-                                 height={100}
-                                 index={index}
-                              ></ShiftScheduleTimeslot>
-                              {lastElement ? (
-                                 <></>
-                              ) : (
-                                 <Divider sx={{ width: "100%" }} />
-                              )}
-                           </div>
-                        );
-                     })}
-                  </div>
-
                   <DragDropContext onDragEnd={handleOnDragEnd}>
+                     <div className="shift-content-timetable">
+                        {tempData.map((slot, index) => {
+                           const height = 94 / tempData.length - 0.6;
+                           const lastElement = index === tempData.length - 1;
+                           return (
+                              <div key={index} style={{ height: `${height}%` }}>
+                                 <ShiftScheduleTimeslot
+                                    data={slot}
+                                    height={100}
+                                    index={index}
+                                 ></ShiftScheduleTimeslot>
+                                 {lastElement ? (
+                                    <></>
+                                 ) : (
+                                    <Divider sx={{ width: "100%" }} />
+                                 )}
+                              </div>
+                           );
+                        })}
+                     </div>
+
                      <Droppable droppableId="character">
                         {(provided) => (
                            <div
