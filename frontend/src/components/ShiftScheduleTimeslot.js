@@ -3,25 +3,27 @@ import { Droppable } from "react-beautiful-dnd";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 
+import ShiftScheduleSlotItem from "./ShiftScheduleSlotItem";
+
 import "../scss/shift-schedule.scss";
 
 const NameMap = ({ names }) => {
    return (
-      <div>
+      <>
          {names.map((name, index) => {
             return (
-               <label key={index}>
-                  {name}
-                  <br></br>
-               </label>
+               <ShiftScheduleSlotItem
+                  key={index}
+                  name={name}
+                  role={"Theke"}
+               ></ShiftScheduleSlotItem>
             );
          })}
-      </div>
+      </>
    );
 };
 
 const ShiftScheduleTimeslot = ({ shift, time, employees, height, index }) => {
-   console.log(shift);
    return (
       <>
          <Box
@@ -53,8 +55,9 @@ const ShiftScheduleTimeslot = ({ shift, time, employees, height, index }) => {
             {shift.map((day, shiftIdx) => {
                var names = [];
                employees.forEach((emp) => {
-                  day[time].map((empSlot) => {
-                     if (emp.key === empSlot) names.push(emp.firstname);
+                  day[time].forEach((empSlot) => {
+                     if (emp.key === empSlot)
+                        names.push(`${emp.firstname} ${emp.lastname}`);
                   });
                });
 

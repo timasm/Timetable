@@ -7,6 +7,7 @@ import "../scss/shift-schedule.scss";
 import ShiftScheduleTopic from "./ShiftScheduleTopic";
 import ShiftScheduleTimeslot from "./ShiftScheduleTimeslot";
 import ShiftScheduleEmployee from "./ShiftScheduleEmployee";
+import ShiftScheduleSlotItem from "./ShiftScheduleSlotItem";
 
 const tempDay = [
    "08:00 - 10:00",
@@ -83,29 +84,37 @@ const tempEmployee = [
 
 const ShiftSchedule = () => {
    const [employees, setEmployees] = useState(tempEmployee);
+   const [dragEmp, setDragEmp] = useState([]);
    const [shift, setShift] = useState(tempShift);
    const [change, setChange] = useState(0);
 
-   useEffect(() => {}, [shift]);
+   useEffect(() => {
+      var arr = [];
+      for (let i = 0; i < employees.length; i++) {
+         arr.push(false);
+      }
+      setDragEmp(arr);
+   }, []);
 
    const handleOnDragEnd = (result) => {
+      var arr = dragEmp;
+      arr[result.source.index] = false;
+      setDragEmp(arr);
+      if (result.destination.droppableId === "character") return;
       const empId = result.source.index + 1;
       const dropId = result.destination.droppableId;
       const day = dropId.split("-")[3];
       const timeSlot = dropId.split("-")[2];
       var temp = shift;
-      //console.log(temp[day]["08:00 - 10:00"]);
       temp[day][tempDay[timeSlot]].push(empId);
-      //console.log(temp[day][tempDay[timeSlot]]);
       setShift(temp);
       setChange(change + 1);
-      /*
-    const items = Array.from(employees);
-    const [recordedItems] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, recordedItems);
+   };
 
-    setEmployees(items);*/
-      console.log(shift);
+   const handleDragStart = (result) => {
+      var arr = dragEmp;
+      arr[result.source.index] = true;
+      setDragEmp(arr);
    };
 
    return (
@@ -121,7 +130,10 @@ const ShiftSchedule = () => {
             >
                <ShiftScheduleTopic></ShiftScheduleTopic>
                <div className="shift-content">
-                  <DragDropContext onDragEnd={handleOnDragEnd}>
+                  <DragDropContext
+                     onDragEnd={handleOnDragEnd}
+                     onDragStart={handleDragStart}
+                  >
                      <div className="shift-content-timetable">
                         {tempDay.map((slot, index) => {
                            const height = 94 / tempDay.length - 0.6;
@@ -151,7 +163,7 @@ const ShiftSchedule = () => {
                      <Droppable droppableId="character">
                         {(provided) => (
                            <div
-                              className="character shift-content-employee"
+                              className="shift-content-employee"
                               {...provided.droppableProps}
                               ref={provided.innerRef}
                            >
@@ -170,15 +182,24 @@ const ShiftSchedule = () => {
                                              {...provided.dragHandleProps}
                                              ref={provided.innerRef}
                                           >
-                                             <ShiftScheduleEmployee
-                                                employee={emp}
-                                             ></ShiftScheduleEmployee>
-                                             {lastElement ? (
-                                                <></>
+                                             {!dragEmp[index] ? (
+                                                <>
+                                                   <ShiftScheduleEmployee
+                                                      employee={emp}
+                                                   ></ShiftScheduleEmployee>
+                                                   {lastElement ? (
+                                                      <></>
+                                                   ) : (
+                                                      <Divider
+                                                         sx={{ width: "100%" }}
+                                                      />
+                                                   )}
+                                                </>
                                              ) : (
-                                                <Divider
-                                                   sx={{ width: "100%" }}
-                                                />
+                                                <ShiftScheduleSlotItem
+                                                   name={`${employees[index].firstname} ${employees[index].lastname}`}
+                                                   role={"Theke"}
+                                                ></ShiftScheduleSlotItem>
                                              )}
                                           </div>
                                        )}
