@@ -1,11 +1,27 @@
 import React from "react";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { Droppable } from "react-beautiful-dnd";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 
 import "../scss/shift-schedule.scss";
 
-const ShiftScheduleTimeslot = ({ data, height, index }) => {
+const NameMap = ({ names }) => {
+   return (
+      <div>
+         {names.map((name, index) => {
+            return (
+               <label key={index}>
+                  {name}
+                  <br></br>
+               </label>
+            );
+         })}
+      </div>
+   );
+};
+
+const ShiftScheduleTimeslot = ({ shift, time, employees, height, index }) => {
+   console.log(shift);
    return (
       <>
          <Box
@@ -31,22 +47,33 @@ const ShiftScheduleTimeslot = ({ data, height, index }) => {
                color="inherit"
                component="div"
             >
-               {data.slotTime}
+               {time}
             </Typography>
-            {[1, 2, 3, 4, 5].map((number) => {
+
+            {shift.map((day, shiftIdx) => {
+               var names = [];
+               employees.forEach((emp) => {
+                  day[time].map((empSlot) => {
+                     if (emp.key === empSlot) names.push(emp.firstname);
+                  });
+               });
+
                return (
                   <Droppable
-                     key={number}
-                     droppableId={`time-slot-${index}-${number}`}
+                     key={`${index}-${shiftIdx}`}
+                     droppableId={`time-slot-${index}-${shiftIdx}`}
                   >
                      {(provided) => (
                         <div
                            {...provided.draggableProps}
                            {...provided.dragHandleProps}
                            ref={provided.innerRef}
-                           id={`emp-${number}-${index}`}
+                           id={`emp-${shiftIdx}-${index}`}
                            className="employee-in-timeslot"
-                        ></div>
+                        >
+                           {provided.placeholder}
+                           <NameMap names={names}></NameMap>
+                        </div>
                      )}
                   </Droppable>
                );
