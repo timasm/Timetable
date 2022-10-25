@@ -1,4 +1,5 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import { Droppable } from "react-beautiful-dnd";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -23,7 +24,10 @@ const NameMap = ({ names }) => {
    );
 };
 
-const ShiftScheduleTimeslot = ({ shift, time, employees, height, index }) => {
+const ShiftScheduleTimeslot = ({ time, height, index }) => {
+   const employees = useSelector((state) => state.shift.employees);
+   const shiftSchedule = useSelector((state) => state.shift.shiftSchedule);
+
    return (
       <>
          <Box
@@ -52,7 +56,7 @@ const ShiftScheduleTimeslot = ({ shift, time, employees, height, index }) => {
                {time}
             </Typography>
 
-            {shift.map((day, shiftIdx) => {
+            {shiftSchedule.map((day, shiftIdx) => {
                var names = [];
                employees.forEach((emp) => {
                   day[time].forEach((empSlot) => {

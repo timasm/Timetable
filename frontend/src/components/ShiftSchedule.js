@@ -1,121 +1,94 @@
 import { React, useEffect, useState } from "react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { useDispatch, useSelector } from "react-redux";
+import { bindActionCreators } from "redux";
+import { actionCreators } from "../state/index";
 import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
 
 import "../scss/shift-schedule.scss";
+import { urls } from "../config";
 import ShiftScheduleTopic from "./ShiftScheduleTopic";
 import ShiftScheduleTimeslot from "./ShiftScheduleTimeslot";
 import ShiftScheduleEmployee from "./ShiftScheduleEmployee";
 import ShiftScheduleSlotItem from "./ShiftScheduleSlotItem";
 
-const tempDay = [
-   "08:00 - 10:00",
-   "10:00 - 12:00",
-   "12:00 - 14:00",
-   "14:00 - 16:00",
-   "16:00 - 18:00",
-];
-
-const tempShift = [
-   {
-      "08:00 - 10:00": [3],
-      "10:00 - 12:00": [3],
-      "12:00 - 14:00": [],
-      "14:00 - 16:00": [4],
-      "16:00 - 18:00": [4],
-   },
-   {
-      "08:00 - 10:00": [2],
-      "10:00 - 12:00": [2],
-      "12:00 - 14:00": [],
-      "14:00 - 16:00": [4],
-      "16:00 - 18:00": [1],
-   },
-   {
-      "08:00 - 10:00": [1],
-      "10:00 - 12:00": [1],
-      "12:00 - 14:00": [],
-      "14:00 - 16:00": [1],
-      "16:00 - 18:00": [1],
-   },
-   {
-      "08:00 - 10:00": [4],
-      "10:00 - 12:00": [4],
-      "12:00 - 14:00": [],
-      "14:00 - 16:00": [4],
-      "16:00 - 18:00": [2],
-   },
-   {
-      "08:00 - 10:00": [3],
-      "10:00 - 12:00": [3, 4],
-      "12:00 - 14:00": [4],
-      "14:00 - 16:00": [4],
-      "16:00 - 18:00": [1],
-   },
-];
-
-const tempEmployee = [
-   {
-      key: 1,
-      firstname: "Max",
-      lastname: "Mustermann",
-      duration: 8,
-   },
-   {
-      key: 2,
-      firstname: "Marie",
-      lastname: "Musterfrau",
-      duration: 8,
-   },
-   {
-      key: 3,
-      firstname: "Florian",
-      lastname: "Schroeter",
-      duration: 6,
-   },
-   {
-      key: 4,
-      firstname: "Tim",
-      lastname: "Assmann",
-      duration: 4,
-   },
-];
-
 const ShiftSchedule = () => {
-   const [employees, setEmployees] = useState(tempEmployee);
+   const dispatch = useDispatch();
+   const { setDay, setShiftSchedule } = bindActionCreators(
+      actionCreators,
+      dispatch
+   );
+
+   const day = useSelector((state) => state.shift.day);
+   const employees = useSelector((state) => state.shift.employees);
+   const shiftSchedule = useSelector((state) => state.shift.shiftSchedule);
    const [dragEmp, setDragEmp] = useState([]);
-   const [shift, setShift] = useState(tempShift);
    const [change, setChange] = useState(0);
 
-   useEffect(() => {
-      var arr = [];
-      for (let i = 0; i < employees.length; i++) {
-         arr.push(false);
-      }
-      setDragEmp(arr);
-   }, []);
-
-   const handleOnDragEnd = (result) => {
-      var arr = dragEmp;
-      arr[result.source.index] = false;
-      setDragEmp(arr);
-      if (result.destination.droppableId === "character") return;
-      const empId = result.source.index + 1;
-      const dropId = result.destination.droppableId;
-      const day = dropId.split("-")[3];
-      const timeSlot = dropId.split("-")[2];
-      var temp = shift;
-      temp[day][tempDay[timeSlot]].push(empId);
-      setShift(temp);
-      setChange(change + 1);
+   /**
+    * These are the get functions
+    * @param {string} url - Backend Api endpoint
+    * @returns {json}
+    */
+   const getMethod = async (url) => {
+      let headers = new Headers();
+      const response = await fetch(url, {
+         method: "GET",
+         headers,
+      });
+      const responseAsJson = await response.json();
+      return responseAsJson;
+   };
+   const getDay = async () => {
+      const day = await getMethod(`${urls.day}TimeSlots`);
+      setDay(day.slots);
    };
 
+   /**
+    * Function to handle Drag and Drop
+    * @param {json} result - automatically generated react-dnd response
+    * @returns
+    */
+   const handleOnDragEnd = (result) => {
+      resetDragBoolean(result.source.index);
+      if (result.destination.droppableId === "character") return;
+      setShiftSchedule(modifyShiftSchedule(result));
+      setChange(change + 1);
+   };
+   const resetDragBoolean = (idx) => {
+      var arr = dragEmp;
+      arr[idx] = false;
+      setDragEmp(arr);
+   };
+   const modifyShiftSchedule = (result) => {
+      const empId = result.source.index + 1;
+      const dropId = result.destination.droppableId;
+      const dayIdx = dropId.split("-")[3];
+      const timeSlot = dropId.split("-")[2];
+      var temp = shiftSchedule;
+      temp[dayIdx][day[timeSlot]].push(empId);
+      console.log(temp);
+      return temp;
+   };
    const handleDragStart = (result) => {
       var arr = dragEmp;
       arr[result.source.index] = true;
       setDragEmp(arr);
    };
+
+   /**
+    * Onload functions
+    */
+   useEffect(() => {
+      getDay();
+      var arr = [];
+      for (let i = 0; i < employees.length; i++) {
+         arr.push(false);
+      }
+      setDragEmp(arr);
+      // eslint-disable-next-line
+   }, []);
 
    return (
       <>
@@ -135,17 +108,15 @@ const ShiftSchedule = () => {
                      onDragStart={handleDragStart}
                   >
                      <div className="shift-content-timetable">
-                        {tempDay.map((slot, index) => {
-                           const height = 94 / tempDay.length - 0.6;
-                           const lastElement = index === tempDay.length - 1;
+                        {day.map((slot, index) => {
+                           const height = 94 / day.length - 0.6;
+                           const lastElement = index === day.length - 1;
                            return (
                               <div
                                  key={`${index}-${change}`}
                                  style={{ height: `${height}%` }}
                               >
                                  <ShiftScheduleTimeslot
-                                    shift={shift}
-                                    employees={tempEmployee}
                                     time={slot}
                                     height={100}
                                     index={index}

@@ -43,16 +43,20 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
 
 class Day(models.Model):
-    day = models.CharField(max_length=25)
+    day = models.CharField(max_length=25, unique=True)
     slots = models.JSONField()
 
-    def __str__(self) -> str:
+    def __str__(self):
         return self.day
 
 
 class Shiftschedule(models.Model):
     date = models.DateField()
+    name = models.CharField(max_length=20, default="")
     data = models.JSONField()
+
+    def __str__(self):
+        return self.name
 
 
 class Employee(models.Model):
@@ -60,7 +64,10 @@ class Employee(models.Model):
     lastname = models.CharField(max_length=25)
     duration = models.IntegerField(default=0)
     preferences = models.JSONField()
-    role = models.JSONField(default={})
+    role = models.JSONField()
+
+    def __str__(self):
+        return "{} {}".format(self.firstname, self.lastname)
 
     class Meta:
         unique_together = ('firstname', 'lastname')

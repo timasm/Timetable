@@ -24,4 +24,5 @@
 /backend/api/__pycache__
 /backend/api/migrations/__pycache__
 
-/env
+/backend/env
+/backend/envTimetable
