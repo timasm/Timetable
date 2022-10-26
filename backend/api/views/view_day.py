@@ -19,6 +19,13 @@ class DaysView(APIView):
         serializer = DaySerializer(dayItem, many=True)
         return Response(serializer.data)
 
+    def post(self, request):
+        serializer = DaySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.error, status=status.HTTP_400_BAD_REQUEST)
+
 
 class SingleDayView(APIView):
 

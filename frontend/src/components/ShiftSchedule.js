@@ -41,8 +41,31 @@ const ShiftSchedule = () => {
       return responseAsJson;
    };
    const getDay = async () => {
-      const day = await getMethod(`${urls.day}TimeSlots`);
-      setDay(day.slots);
+      const responseDay = await getMethod(`${urls.day}TimeSlots/`);
+      setDay(responseDay.slots);
+   };
+   const getShiftSchedule = async () => {
+      const ResponseSchiftSchedule = await getMethod(`${urls.shiftSchedule}1/`);
+      setShiftSchedule(ResponseSchiftSchedule.data);
+   };
+
+   /**
+    *
+    * @param {list} data - modified Shift Schedule
+    * @param {string} url - url for shiftSchedule Api Endpoint
+    */
+   const putMethod = async (data, url) => {
+      let headers = new Headers();
+      headers.append("Content-Type", "application/json");
+      const body = {
+         data: data,
+      };
+      await fetch(url, {
+         method: "PUT",
+         headers,
+         body: JSON.stringify(body),
+      });
+      getShiftSchedule();
    };
 
    /**
@@ -50,10 +73,10 @@ const ShiftSchedule = () => {
     * @param {json} result - automatically generated react-dnd response
     * @returns
     */
-   const handleOnDragEnd = (result) => {
+   const handleOnDragEnd = async (result) => {
       resetDragBoolean(result.source.index);
       if (result.destination.droppableId === "character") return;
-      setShiftSchedule(modifyShiftSchedule(result));
+      putMethod(modifyShiftSchedule(result), `${urls.shiftSchedule}1/`);
       setChange(change + 1);
    };
    const resetDragBoolean = (idx) => {
@@ -82,6 +105,10 @@ const ShiftSchedule = () => {
     */
    useEffect(() => {
       getDay();
+      getShiftSchedule();
+      // eslint-disable-next-line
+   }, []);
+   useEffect(() => {
       var arr = [];
       for (let i = 0; i < employees.length; i++) {
          arr.push(false);

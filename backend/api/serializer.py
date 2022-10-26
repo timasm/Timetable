@@ -14,3 +14,15 @@ class DaySerializer(serializers.ModelSerializer):
     class Meta:
         model = Day
         fields = ["day", "slots"]
+
+
+class ShiftScheduleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Shiftschedule
+        fields = "__all__"
+
+
+class PutShiftScheduleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Shiftschedule
+        fields = ["data"]
