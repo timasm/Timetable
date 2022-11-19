@@ -27,7 +27,7 @@ class ShiftScheduleView(APIView):
         return Response(serializer.error, status=status.HTTP_400_BAD_REQUEST)
 
 
-class SingleShiftScheduleView(APIView):
+class DeatilShiftScheduleView(APIView):
 
     #permission_classes = (IsAuthenticated,)
 
@@ -43,10 +43,30 @@ class SingleShiftScheduleView(APIView):
         return Response(serializer.data)
 
     def put(self, request, id):
+        day = request.data["Day"]
+        slot = request.data["Slot"]
+        employee = request.data["Employee"]
         shift_schedule = self.get_object(id)
-        serializer = PutShiftScheduleSerializer(
-            shift_schedule, data=request.data)
+        temp = shift_schedule.data
+        temp[day][slot].append(employee)
+        shift_schedule.data = temp
+        shift_schedule.save()
+        serializer = ShiftScheduleSerializer(shift_schedule)
+        return Response(serializer.data)
+
+
+class SingleShiftScheduleView(APIView):
+
+    #permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        shift_schedules = Shiftschedule.objects.all()
+        serializer = ShiftScheduleSerializer(shift_schedules, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = ShiftScheduleSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.error, status=status.HTTP_400_BAD_REQUEST)

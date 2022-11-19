@@ -8,25 +8,25 @@ const shiftSchedule = [];
 
 const employees = [
    {
-      key: 1,
+      id: 1,
       firstname: "Max",
       lastname: "Mustermann",
       duration: 8,
    },
    {
-      key: 2,
+      id: 2,
       firstname: "Marie",
       lastname: "Musterfrau",
       duration: 8,
    },
    {
-      key: 3,
+      id: 3,
       firstname: "Florian",
       lastname: "Schroeter",
       duration: 6,
    },
    {
-      key: 4,
+      id: 4,
       firstname: "Tim",
       lastname: "Assmann",
       duration: 4,

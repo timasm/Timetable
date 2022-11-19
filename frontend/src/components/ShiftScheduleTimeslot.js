@@ -60,7 +60,7 @@ const ShiftScheduleTimeslot = ({ time, height, index }) => {
                var names = [];
                employees.forEach((emp) => {
                   day[time].forEach((empSlot) => {
-                     if (emp.key === empSlot)
+                     if (emp.id === empSlot)
                         names.push(`${emp.firstname} ${emp.lastname}`);
                   });
                });

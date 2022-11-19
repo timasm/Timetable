@@ -22,9 +22,9 @@ const ShiftSchedule = () => {
 
    const day = useSelector((state) => state.shift.day);
    const employees = useSelector((state) => state.shift.employees);
-   const shiftSchedule = useSelector((state) => state.shift.shiftSchedule);
    const [dragEmp, setDragEmp] = useState([]);
    const [change, setChange] = useState(0);
+   console.log(employees);
 
    /**
     * These are the get functions
@@ -45,7 +45,8 @@ const ShiftSchedule = () => {
       setDay(responseDay.slots);
    };
    const getShiftSchedule = async () => {
-      const ResponseSchiftSchedule = await getMethod(`${urls.shiftSchedule}1/`);
+      const ResponseSchiftSchedule = await getMethod(`${urls.shiftSchedule}3/`);
+      console.log(ResponseSchiftSchedule.data);
       setShiftSchedule(ResponseSchiftSchedule.data);
    };
 
@@ -57,13 +58,10 @@ const ShiftSchedule = () => {
    const putMethod = async (data, url) => {
       let headers = new Headers();
       headers.append("Content-Type", "application/json");
-      const body = {
-         data: data,
-      };
       await fetch(url, {
          method: "PUT",
          headers,
-         body: JSON.stringify(body),
+         body: JSON.stringify(data),
       });
       getShiftSchedule();
    };
@@ -76,7 +74,7 @@ const ShiftSchedule = () => {
    const handleOnDragEnd = async (result) => {
       resetDragBoolean(result.source.index);
       if (result.destination.droppableId === "character") return;
-      putMethod(modifyShiftSchedule(result), `${urls.shiftSchedule}1/`);
+      putMethod(updateScheduleData(result), `${urls.shiftSchedule}3/`);
       setChange(change + 1);
    };
    const resetDragBoolean = (idx) => {
@@ -84,15 +82,16 @@ const ShiftSchedule = () => {
       arr[idx] = false;
       setDragEmp(arr);
    };
-   const modifyShiftSchedule = (result) => {
+   const updateScheduleData = (result) => {
       const empId = result.source.index + 1;
       const dropId = result.destination.droppableId;
       const dayIdx = dropId.split("-")[3];
-      const timeSlot = dropId.split("-")[2];
-      var temp = shiftSchedule;
-      temp[dayIdx][day[timeSlot]].push(empId);
-      console.log(temp);
-      return temp;
+      const data = {
+         Day: parseInt(dayIdx),
+         Slot: day[dayIdx],
+         Employee: empId,
+      };
+      return data;
    };
    const handleDragStart = (result) => {
       var arr = dragEmp;

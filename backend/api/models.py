@@ -59,6 +59,15 @@ class Shiftschedule(models.Model):
         return self.name
 
 
+class SingleShiftSchedule(models.Model):
+    scheduleId = models.IntegerField()
+    data = models.JSONField()
+    activated = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.scheduleId
+
+
 class Employee(models.Model):
     firstname = models.CharField(max_length=25)
     lastname = models.CharField(max_length=25)

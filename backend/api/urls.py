@@ -11,6 +11,6 @@ urlpatterns = [
     path('day/<str:day>/', SingleDayView.as_view()),
 
     path('shiftschedule/', ShiftScheduleView.as_view()),
-    path('shiftschedule/<int:id>/', SingleShiftScheduleView.as_view()),
+    path('shiftschedule/<int:id>/', DeatilShiftScheduleView.as_view()),
 
 ]
